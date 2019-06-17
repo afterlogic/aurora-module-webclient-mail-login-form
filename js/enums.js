@@ -5,11 +5,6 @@ var
 	Enums = {}
 ;
 
-Enums.LoginFormType = {
-	'EmailOnly': 'EmailOnly',
-	'EmailAndLogin': 'EmailAndLogin'
-};
-
 /**
  * @enum {number}
  */

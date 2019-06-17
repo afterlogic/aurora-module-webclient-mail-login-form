@@ -27,8 +27,7 @@ var
 function CLoginView()
 {
 	CAbstractScreenView.call(this, '%ModuleName%');
-	
-	this.sFormType = Settings.FormType;
+
 	this.sCustomLogoUrl = Settings.CustomLogoUrl;
 	this.sInfoText = Settings.InfoText;
 	this.sBottomInfoHtmlText = Settings.BottomInfoHtmlText;
@@ -54,9 +53,6 @@ function CLoginView()
 	this.signInButtonText = ko.computed(function () {
 		return this.loading() ? TextUtils.i18n('COREWEBCLIENT/ACTION_SIGN_IN_IN_PROGRESS') : TextUtils.i18n('COREWEBCLIENT/ACTION_SIGN_IN');
 	}, this);
-	this.usernamePlaceholderText = ko.computed(function () {
-		return Settings.FormType === Enums.LoginFormType.EmailAndLogin ? TextUtils.i18n('%MODULENAME%/LABEL_USERNAME') : TextUtils.i18n('COREWEBCLIENT/LABEL_LOGIN');
-	});
 
 	this.loginCommand = Utils.createCommand(this, this.signIn, this.canBeLogin);
 
@@ -121,36 +117,26 @@ CLoginView.prototype.signIn = function ()
 	if (!this.loading())
 	{
 		var
-			sEmail = '',
+			sDomain = '',
 			sLogin = '',
 			sPassword = $.trim(this.password()),
 			koForFocus = null
 		;
 
-		switch (this.sFormType) {
-			case Enums.LoginFormType.EmailAndLogin:
-				sLogin = $.trim(this.login());
-				if (sLogin.length === 0)
-				{
-					koForFocus = this.loginFocus;
-				}
-			case Enums.LoginFormType.EmailOnly:
-				sEmail = $.trim(this.username()) + '@';
-				if (sEmail.length === 0)
-				{
-					koForFocus = this.usernameFocus;
-				}
-				else
-				{
-					sEmail += this.domains().length > 1 ? this.selectedDomain() :  this.firstDomain();
-				}
-				break;
+		sLogin = $.trim(this.username());
+		if (sLogin.length === 0)
+		{
+			koForFocus = this.usernameFocus;
 		}
-		
-		if (sEmail.length > 0 && sPassword.length > 0)
+		else
+		{
+			sDomain = this.domains().length > 1 ? this.selectedDomain() :  this.firstDomain();
+		}
+
+		if (sLogin.length > 0 && sPassword.length > 0)
 		{
 			var oParameters = {
-				'Email': sEmail,
+				'Domain': sDomain,
 				'Login': sLogin,
 				'Password': sPassword,
 				'Language': $.cookie('aurora-selected-lang') || '',

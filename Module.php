@@ -25,12 +25,12 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 	public function GetSettings()
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-		
+
 		return array(
 			'ServerModuleName' => $this->getConfig('ServerModuleName', ''),
 			'HashModuleName' => $this->getConfig('HashModuleName', ''),
 			'CustomLoginUrl' => $this->getConfig('CustomLoginUrl', ''),
-			'FormType' => $this->getConfig('FormType', null),
+			'AuthType' => $this->getConfig('AuthType', null),
 			'DemoLogin' => $this->getConfig('DemoLogin', ''),
 			'DemoPassword' => $this->getConfig('DemoPassword', ''),
 			'InfoText' => $this->getConfig('InfoText', ''),
@@ -40,30 +40,46 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			'UseDropdownLanguagesView' => $this->getConfig('UseDropdownLanguagesView', false),
 		);
 	}
-	
-	public function Login($Email, $Login, $Password, $Language = '', $SignMe = false)
+
+	public function Login($Login, $Password, $Domain, $Language = '', $SignMe = false)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 		$mResult = false;
-
 		$bResult = false;
 		$oServer = null;
 		$iUserId = 0;
-		$sEmail = \trim($Email);
-		$sLogin = empty(\trim($Login)) ? $sEmail : \trim($Login);
+		$sLogin = \trim($Login);
+		$sDomain = \trim($Domain);
 		$sPassword = $Password;
-		if (empty($sEmail))
+		$sAuthType = $this->getConfig('AuthType', 'Email');
+		if (empty($sLogin) || empty($sPassword) || empty($sDomain))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
-		$oAccount = \Aurora\System\Api::getModule('Mail')->getAccountsManager()->getAccountUsedToAuthorize($sEmail);
-
+		$sEmail = $sLogin . '@' . $sDomain;
+		if ($sAuthType === 'Email')
+		{
+			$sIncomingLogin = $sEmail;
+			$bAutocreateMailAccountOnNewUserFirstLogin = \Aurora\Modules\Mail\Module::Decorator()->getConfig('AutocreateMailAccountOnNewUserFirstLogin', false);
+		}
+		else if ($sAuthType === 'Login')
+		{
+			$sIncomingLogin = $sLogin;
+			$bAutocreateMailAccountOnNewUserFirstLogin = false;
+		}
 		$bNewAccount = false;
-		$bAutocreateMailAccountOnNewUserFirstLogin = \Aurora\Modules\Mail\Module::Decorator()->getConfig('AutocreateMailAccountOnNewUserFirstLogin', false);
+		$oAccount = \Aurora\System\Api::getModule('Mail')->getAccountsManager()->getAccountUsedToAuthorize($sEmail);
+		if (!$bAutocreateMailAccountOnNewUserFirstLogin && !$oAccount)
+		{
+			$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sEmail);
+			if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+			{
+				$bAutocreateMailAccountOnNewUserFirstLogin = true;
+			}
+		}
 
 		if ($bAutocreateMailAccountOnNewUserFirstLogin && !$oAccount)
 		{
-			$sDomain = \MailSo\Base\Utils::GetDomainFromEmail($sEmail);
 			$oServer = \Aurora\System\Api::getModule('Mail')->getServersManager()->GetServerByDomain(strtolower($sDomain));
 			if (!$oServer)
 			{
@@ -73,7 +89,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			{
 				$oAccount = new \Aurora\Modules\Mail\Classes\Account(self::GetName());
 				$oAccount->Email = $sEmail;
-				$oAccount->IncomingLogin = $sLogin;
+				$oAccount->IncomingLogin = $sIncomingLogin;
 				$oAccount->setPassword($sPassword);
 				$oAccount->ServerId = $oServer->EntityId;
 				$bNewAccount = true;
@@ -86,8 +102,8 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			{
 				if ($bAutocreateMailAccountOnNewUserFirstLogin || !$bNewAccount)
 				{
-					$bNeedToUpdatePasswordOrLogin = $sPassword !== $oAccount->getPassword() || $sLogin !== $oAccount->IncomingLogin;
-					$oAccount->IncomingLogin = $sLogin;
+					$bNeedToUpdatePasswordOrLogin = $sPassword !== $oAccount->getPassword() || $sIncomingLogin !== $oAccount->IncomingLogin;
+					$oAccount->IncomingLogin = $sIncomingLogin;
 					$oAccount->setPassword($sPassword);
 
 					\Aurora\System\Api::getModule('Mail')->getMailManager()->validateAccountConnection($oAccount);
@@ -121,7 +137,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 							$iUserId,
 							$sEmail,
 							$sEmail,
-							$sLogin,
+							$sIncomingLogin,
 							$sPassword,
 							array('ServerId' => $oServer->EntityId)
 						);
@@ -181,14 +197,14 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 				$this->getUsersManager()->updateUser($oUser);
 			}
 
-			\Aurora\System\Api::LogEvent('login-success: ' . $sLogin, self::GetName());
+			\Aurora\System\Api::LogEvent('login-success: ' . $sIncomingLogin, self::GetName());
 			$mResult = [
 				'AuthToken' => $sAuthToken
 			];
 		}
 		else
 		{
-			\Aurora\System\Api::LogEvent('login-failed: ' . $sLogin, self::GetName());
+			\Aurora\System\Api::LogEvent('login-failed: ' . $sIncomingLogin, self::GetName());
 			\Aurora\System\Api::GetModuleManager()->SetLastException(
 				new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::AuthError)
 			);
@@ -196,15 +212,15 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 
 		return $mResult;
 	}
-	
+
 	public function GetMailDomains()
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-		
+
 		$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
 		$aServers = \Aurora\Modules\Mail\Module::Decorator()->GetServers(2);
 		\Aurora\System\Api::skipCheckUserRole($bPrevState);
-		
+
 		$aAllDomains = [];
 		if ($aServers)
 		{

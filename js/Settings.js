@@ -8,9 +8,8 @@ var
 
 module.exports = {
 	ServerModuleName: '%ModuleName%',
-	HashModuleName: 'login',
-	
-	FormType: Enums.LoginFormType.LoginAndDomain,
+	HashModuleName: 'mail',
+
 	AllowChangeLanguage: false,
 	CustomLoginUrl: '',
 	CustomLogoUrl: '',
@@ -37,7 +36,6 @@ module.exports = {
 		{
 			this.ServerModuleName = Types.pString(oAppDataSection.ServerModuleName, this.ServerModuleName);
 			this.HashModuleName = Types.pString(oAppDataSection.HashModuleName, this.HashModuleName);
-			this.FormType = Types.pString(oAppDataSection.FormType, this.FormType);
 			this.AllowChangeLanguage = Types.pBool(oAppDataSection.AllowChangeLanguage, this.AllowChangeLanguage);
 			this.CustomLoginUrl = Types.pString(oAppDataSection.CustomLoginUrl, this.CustomLoginUrl);
 			this.DemoLogin = Types.pString(oAppDataSection.DemoLogin, this.DemoLogin);

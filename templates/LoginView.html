@@ -14,7 +14,7 @@
 							<label for="mail_login" class="placeholder"></label>
 							<span class="value">
 								<input id="mail_username" tabindex="1" class="input" name="username" type="text" spellcheck="false"
-									   data-bind="value: username, hasfocus: usernameFocus, valueUpdate: 'afterkeydown', attr: {placeholder: usernamePlaceholderText}" />
+									   data-bind="value: username, hasfocus: usernameFocus, valueUpdate: 'afterkeydown', i18n: {'key': 'COREWEBCLIENT/LABEL_LOGIN', 'type': 'placeholder'}" />
 							</span>
 							<span class="domain-select">
 								@
@@ -22,13 +22,6 @@
 								<span class="value" data-bind="visible: domains().length === 1">
 									<span data-bind="text: firstDomain"></span>
 								</span>
-							</span>
-						</div>
-						<div class="row login" data-bind="css: {'filled': login().length > 0, shake: shake()}, visible: sFormType === Enums.LoginFormType.EmailAndLogin">
-							<label for="mail_login" class="placeholder"></label>
-							<span class="value">
-								<input id="mail_login" tabindex="1" class="input" name="login" type="text" spellcheck="false"
-									   data-bind="value: login, hasfocus: loginFocus, valueUpdate: 'afterkeydown', i18n: {'key': 'COREWEBCLIENT/LABEL_LOGIN', 'type': 'placeholder'}" />
 							</span>
 						</div>
 						<div class="row password" data-bind="css: {'focused': passwordFocus(), 'filled': password().length > 0, shake: shake()}">

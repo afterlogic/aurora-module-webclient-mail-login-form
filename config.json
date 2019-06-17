@@ -43,8 +43,8 @@
 		false,
 		"bool"
 	],
-	"FormType": [
-		"EmailOnly",
+	"AuthType": [
+		"Email",
 		"string"
 	]
 }
