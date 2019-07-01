@@ -42,9 +42,5 @@
 	"UseDropdownLanguagesView": [
 		false,
 		"bool"
-	],
-	"AuthType": [
-		"Email",
-		"string"
 	]
 }

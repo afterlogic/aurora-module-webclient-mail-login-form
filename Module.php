@@ -30,7 +30,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			'ServerModuleName' => $this->getConfig('ServerModuleName', ''),
 			'HashModuleName' => $this->getConfig('HashModuleName', ''),
 			'CustomLoginUrl' => $this->getConfig('CustomLoginUrl', ''),
-			'AuthType' => $this->getConfig('AuthType', null),
 			'DemoLogin' => $this->getConfig('DemoLogin', ''),
 			'DemoPassword' => $this->getConfig('DemoPassword', ''),
 			'InfoText' => $this->getConfig('InfoText', ''),
@@ -51,125 +50,127 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		$sLogin = \trim($Login);
 		$sDomain = \trim($Domain);
 		$sPassword = $Password;
-		$sAuthType = $this->getConfig('AuthType', 'Email');
 		if (empty($sLogin) || empty($sPassword) || empty($sDomain))
 		{
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		$sEmail = $sLogin . '@' . $sDomain;
-		if ($sAuthType === 'Email')
+		$oServer = \Aurora\System\Api::getModule('Mail')->getServersManager()->GetServerByDomain(strtolower($sDomain));
+		if (!$oServer)
 		{
-			$sIncomingLogin = $sEmail;
-			$bAutocreateMailAccountOnNewUserFirstLogin = \Aurora\Modules\Mail\Module::Decorator()->getConfig('AutocreateMailAccountOnNewUserFirstLogin', false);
+			$oServer = \Aurora\System\Api::getModule('Mail')->getServersManager()->GetServerByDomain('*');
 		}
-		else if ($sAuthType === 'Login')
+		if ($oServer)
 		{
-			$sIncomingLogin = $sLogin;
-			$bAutocreateMailAccountOnNewUserFirstLogin = false;
-		}
-		$bNewAccount = false;
-		$oAccount = \Aurora\System\Api::getModule('Mail')->getAccountsManager()->getAccountUsedToAuthorize($sEmail);
-		if (!$bAutocreateMailAccountOnNewUserFirstLogin && !$oAccount)
-		{
-			$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sEmail);
-			if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+			if ($oServer->UseFullEmailAddressAsLogin)
 			{
-				$bAutocreateMailAccountOnNewUserFirstLogin = true;
+				$sIncomingLogin = $sEmail;
+				$bAutocreateMailAccountOnNewUserFirstLogin = \Aurora\Modules\Mail\Module::Decorator()->getConfig('AutocreateMailAccountOnNewUserFirstLogin', false);
 			}
-		}
-
-		if ($bAutocreateMailAccountOnNewUserFirstLogin && !$oAccount)
-		{
-			$oServer = \Aurora\System\Api::getModule('Mail')->getServersManager()->GetServerByDomain(strtolower($sDomain));
-			if (!$oServer)
+			else
 			{
-				$oServer = \Aurora\System\Api::getModule('Mail')->getServersManager()->GetServerByDomain('*');
+				$sIncomingLogin = $sLogin;
+				$bAutocreateMailAccountOnNewUserFirstLogin = false;
 			}
-			if ($oServer)
+			$bNewAccount = false;
+			$oAccount = \Aurora\System\Api::getModule('Mail')->getAccountsManager()->getAccountUsedToAuthorize($sEmail);
+			if (!$bAutocreateMailAccountOnNewUserFirstLogin && !$oAccount)
 			{
-				$oAccount = new \Aurora\Modules\Mail\Classes\Account(self::GetName());
-				$oAccount->Email = $sEmail;
-				$oAccount->IncomingLogin = $sIncomingLogin;
-				$oAccount->setPassword($sPassword);
-				$oAccount->ServerId = $oServer->EntityId;
-				$bNewAccount = true;
-			}
-		}
-
-		if ($oAccount instanceof \Aurora\Modules\Mail\Classes\Account)
-		{
-			try
-			{
-				if ($bAutocreateMailAccountOnNewUserFirstLogin || !$bNewAccount)
+				$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($sEmail);
+				if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
 				{
-					$bNeedToUpdatePasswordOrLogin = $sPassword !== $oAccount->getPassword() || $sIncomingLogin !== $oAccount->IncomingLogin;
+					$bAutocreateMailAccountOnNewUserFirstLogin = true;
+				}
+			}
+
+			if ($bAutocreateMailAccountOnNewUserFirstLogin && !$oAccount)
+			{
+				if ($oServer)
+				{
+					$oAccount = new \Aurora\Modules\Mail\Classes\Account(self::GetName());
+					$oAccount->Email = $sEmail;
 					$oAccount->IncomingLogin = $sIncomingLogin;
 					$oAccount->setPassword($sPassword);
-
-					\Aurora\System\Api::getModule('Mail')->getMailManager()->validateAccountConnection($oAccount);
-
-					if ($bNeedToUpdatePasswordOrLogin)
-					{
-						\Aurora\System\Api::getModule('Mail')->getAccountsManager()->updateAccount($oAccount);
-					}
-
-					$bResult =  true;
-				}
-
-				if ($bAutocreateMailAccountOnNewUserFirstLogin && $bNewAccount)
-				{
-					$oUser = null;
-					$aSubArgs = array(
-						'UserName' => $sEmail,
-						'Email' => $sEmail,
-						'UserId' => $iUserId
-					);
-					$this->broadcastEvent(
-						'CreateAccount',
-						$aSubArgs,
-						$oUser
-					);
-					if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
-					{
-						$iUserId = $oUser->EntityId;
-						$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
-						$oAccount = \Aurora\Modules\Mail\Module::Decorator()->CreateAccount(
-							$iUserId,
-							$sEmail,
-							$sEmail,
-							$sIncomingLogin,
-							$sPassword,
-							array('ServerId' => $oServer->EntityId)
-						);
-						\Aurora\System\Api::skipCheckUserRole($bPrevState);
-						if ($oAccount)
-						{
-							$oAccount->UseToAuthorize = true;
-							$oAccount->UseThreading = $oServer->EnableThreading;
-							$bResult = \Aurora\System\Api::getModule('Mail')->getAccountsManager()->updateAccount($oAccount);
-						}
-						else
-						{
-							$bResult = false;
-						}
-					}
-				}
-
-				if ($bResult)
-				{
-					$mResult = array(
-						'token' => 'auth',
-						'id' => $oAccount->IdUser,
-						'account' => $oAccount->EntityId,
-						'account_type' => $oAccount->getName()
-					);
+					$oAccount->ServerId = $oServer->EntityId;
+					$bNewAccount = true;
 				}
 			}
-			catch (\Aurora\System\Exceptions\ApiException $oException)
+
+			if ($oAccount instanceof \Aurora\Modules\Mail\Classes\Account)
 			{
-				throw $oException;
+				try
+				{
+					if ($bAutocreateMailAccountOnNewUserFirstLogin || !$bNewAccount)
+					{
+						$bNeedToUpdatePasswordOrLogin = $sPassword !== $oAccount->getPassword() || $sIncomingLogin !== $oAccount->IncomingLogin;
+						$oAccount->IncomingLogin = $sIncomingLogin;
+						$oAccount->setPassword($sPassword);
+
+						\Aurora\System\Api::getModule('Mail')->getMailManager()->validateAccountConnection($oAccount);
+
+						if ($bNeedToUpdatePasswordOrLogin)
+						{
+							\Aurora\System\Api::getModule('Mail')->getAccountsManager()->updateAccount($oAccount);
+						}
+
+						$bResult =  true;
+					}
+
+					if ($bAutocreateMailAccountOnNewUserFirstLogin && $bNewAccount)
+					{
+						$oUser = null;
+						$aSubArgs = array(
+							'UserName' => $sEmail,
+							'Email' => $sEmail,
+							'UserId' => $iUserId
+						);
+						$this->broadcastEvent(
+							'CreateAccount',
+							$aSubArgs,
+							$oUser
+						);
+						if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+						{
+							$iUserId = $oUser->EntityId;
+							$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
+							$oAccount = \Aurora\Modules\Mail\Module::Decorator()->CreateAccount(
+								$iUserId,
+								$sEmail,
+								$sEmail,
+								$sIncomingLogin,
+								$sPassword,
+								array('ServerId' => $oServer->EntityId)
+							);
+							\Aurora\System\Api::skipCheckUserRole($bPrevState);
+							if ($oAccount)
+							{
+								$oAccount->UseToAuthorize = true;
+								$oAccount->UseThreading = $oServer->EnableThreading;
+								$bResult = \Aurora\System\Api::getModule('Mail')->getAccountsManager()->updateAccount($oAccount);
+							}
+							else
+							{
+								$bResult = false;
+							}
+						}
+					}
+
+					if ($bResult)
+					{
+						$mResult = array(
+							'token' => 'auth',
+							'id' => $oAccount->IdUser,
+							'account' => $oAccount->EntityId,
+							'account_type' => $oAccount->getName()
+						);
+					}
+				}
+				catch (\Aurora\System\Exceptions\ApiException $oException)
+				{
+					throw $oException;
+				}
+				catch (\Exception $oException) {}
 			}
-			catch (\Exception $oException) {}
 		}
 
 		if (is_array($mResult))
