@@ -219,21 +219,46 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 
 		$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
-		$aServers = \Aurora\Modules\Mail\Module::Decorator()->GetServers(2);
-		\Aurora\System\Api::skipCheckUserRole($bPrevState);
-
 		$aAllDomains = [];
-		if ($aServers)
+		$oTenant = \Aurora\System\Api::getTenantByWebDomain();
+		if (!$oTenant)
 		{
-			foreach ($aServers as $oServer)
+			$aTenants = \Aurora\Modules\Core\Module::Decorator()->getTenantsManager()->getTenantList(0, 1, '', '');
+			$oTenant = count($aTenants) === 1 ? $aTenants[0] : null;
+		}
+		if ($oTenant instanceof \Aurora\Modules\Core\Classes\Tenant)
+		{
+			$aArgs = [
+				'TenantId' => $oTenant->EntityId
+			];
+			$mResult = [];
+			$this->broadcastEvent(
+				'GetMailDomains',
+				$aArgs,
+				$mResult
+			);
+			if (is_array($mResult) && !empty($mResult))
 			{
-				$aDomains = explode("\n", $oServer->Domains);
-				$aDomains = array_filter($aDomains, function($sDomain) {
-					return $sDomain !== '*';
-				});
-				$aAllDomains = array_merge($aAllDomains, $aDomains);
+				$aAllDomains = $mResult;
+			}
+			else
+			{
+				$aServers = \Aurora\Modules\Mail\Module::Decorator()->GetServers($oTenant->EntityId);
+				if ($aServers)
+				{
+					foreach ($aServers as $oServer)
+					{
+						$aDomains = explode("\n", $oServer->Domains);
+						$aDomains = array_filter($aDomains, function($sDomain) {
+							return $sDomain !== '*';
+						});
+						$aAllDomains = array_merge($aAllDomains, $aDomains);
+					}
+				}
 			}
 		}
+		\Aurora\System\Api::skipCheckUserRole($bPrevState);
+
 		return $aAllDomains;
 	}
 	/***** public functions might be called with web API *****/
