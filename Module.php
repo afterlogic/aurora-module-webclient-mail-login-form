@@ -221,39 +221,53 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
 		$aAllDomains = [];
 		$oTenant = \Aurora\System\Api::getTenantByWebDomain();
-		if (!$oTenant)
-		{
-			$aTenants = \Aurora\Modules\Core\Module::Decorator()->getTenantsManager()->getTenantList(0, 1, '', '');
-			$oTenant = count($aTenants) === 1 ? $aTenants[0] : null;
-		}
+		$aArgs = [];
 		if ($oTenant instanceof \Aurora\Modules\Core\Classes\Tenant)
 		{
 			$aArgs = [
 				'TenantId' => $oTenant->EntityId
 			];
-			$mResult = [];
-			$this->broadcastEvent(
-				'GetMailDomains',
-				$aArgs,
-				$mResult
-			);
-			if (is_array($mResult) && !empty($mResult))
+		}
+		$mResult = [];
+		$this->broadcastEvent(
+			'GetMailDomains',
+			$aArgs,
+			$mResult
+		);
+		if (is_array($mResult) && !empty($mResult))
+		{
+			$aAllDomains = $mResult;
+		}
+		else
+		{
+			if ($oTenant instanceof \Aurora\Modules\Core\Classes\Tenant)
 			{
-				$aAllDomains = $mResult;
+				$aFilters = ['$OR' => [
+					'OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::SuperAdmin, '='],
+					'$AND' => [
+						'TenantId' => [$oTenant->EntityId, '='],
+						'OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::Tenant, '='],
+					],
+				]];
 			}
 			else
 			{
-				$aServers = \Aurora\Modules\Mail\Module::Decorator()->GetServers($oTenant->EntityId);
-				if ($aServers)
+				//get all servers for all tenants
+				$aFilters = ['$OR' => [
+					'1@OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::Tenant, '='],
+					'2@OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::SuperAdmin, '=']
+				]];
+			}
+			$aServers = \Aurora\Modules\Mail\Module::Decorator()->getServersManager()->getServerListByFilter($aFilters);
+			if ($aServers)
+			{
+				foreach ($aServers as $oServer)
 				{
-					foreach ($aServers as $oServer)
-					{
-						$aDomains = explode("\n", $oServer->Domains);
-						$aDomains = array_filter($aDomains, function($sDomain) {
-							return $sDomain !== '*';
-						});
-						$aAllDomains = array_merge($aAllDomains, $aDomains);
-					}
+					$aDomains = explode("\n", $oServer->Domains);
+					$aDomains = array_filter($aDomains, function($sDomain) {
+						return $sDomain !== '*';
+					});
+					$aAllDomains = array_merge($aAllDomains, $aDomains);
 				}
 			}
 		}
