@@ -55,7 +55,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		$sEmail = $sLogin . '@' . $sDomain;
-		$oServer = \Aurora\System\Api::getModule('Mail')->getServersManager()->GetServerByDomain(strtolower($sDomain));
+		$oServer = \Aurora\System\Api::getModule('Mail')->GetMailServerByDomain(strtolower($sDomain));
 		if (!$oServer)
 		{
 			$oServer = \Aurora\System\Api::getModule('Mail')->getServersManager()->GetServerByDomain('*');
@@ -195,7 +195,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			if ($Language !== '' && $oUser && $oUser->Language !== $Language)
 			{
 				$oUser->Language = $Language;
-				$this->getUsersManager()->updateUser($oUser);
+				\Aurora\System\Api::getModule('Core')->getUsersManager()->updateUser($oUser);
 			}
 
 			\Aurora\System\Api::LogEvent('login-success: ' . $sIncomingLogin, self::GetName());
@@ -205,7 +205,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		}
 		else
 		{
-			\Aurora\System\Api::LogEvent('login-failed: ' . $sIncomingLogin, self::GetName());
+			\Aurora\System\Api::LogEvent('login-failed: ' . $sLogin, self::GetName());
 			\Aurora\System\Api::GetModuleManager()->SetLastException(
 				new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::AuthError)
 			);
@@ -258,7 +258,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 					'2@OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::SuperAdmin, '=']
 				]];
 			}
-			$aServers = \Aurora\Modules\Mail\Module::Decorator()->getServersManager()->getServerListByFilter($aFilters);
+			$aServers = \Aurora\System\Api::getModule('Mail')->getServersManager()->getServerListByFilter($aFilters);
 			if ($aServers)
 			{
 				foreach ($aServers as $oServer)
