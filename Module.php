@@ -55,10 +55,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 		}
 		$sEmail = $sLogin . '@' . $sDomain;
-		$oServer = \Aurora\System\Api::getModule('Mail')->GetMailServerByDomain(strtolower($sDomain), /*AllowWildcardDomain*/true);
-		if (!$oServer)
+		$aGetMailServerResult = \Aurora\System\Api::getModule('Mail')->GetMailServerByDomain(strtolower($sDomain), /*AllowWildcardDomain*/true);
+		if (!empty($aGetMailServerResult) && isset($aGetMailServerResult['Server']) && $aGetMailServerResult['Server'] instanceof \Aurora\Modules\Mail\Classes\Server)
 		{
-			$oServer = \Aurora\System\Api::getModule('Mail')->getServersManager()->GetServerByDomain('*');
+			$oServer = $aGetMailServerResult['Server'];
 		}
 		if ($oServer)
 		{
