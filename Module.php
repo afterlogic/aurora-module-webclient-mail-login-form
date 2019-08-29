@@ -62,16 +62,9 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		}
 		if ($oServer)
 		{
-			if ($oServer->UseFullEmailAddressAsLogin)
-			{
-				$sIncomingLogin = $sEmail;
-				$bAutocreateMailAccountOnNewUserFirstLogin = \Aurora\Modules\Mail\Module::Decorator()->getConfig('AutocreateMailAccountOnNewUserFirstLogin', false);
-			}
-			else
-			{
-				$sIncomingLogin = $sLogin;
-				$bAutocreateMailAccountOnNewUserFirstLogin = false;
-			}
+			$bAutocreateMailAccountOnNewUserFirstLogin = \Aurora\Modules\Mail\Module::Decorator()->getConfig('AutocreateMailAccountOnNewUserFirstLogin', false);
+			$sIncomingLogin = $oServer->UseFullEmailAddressAsLogin ? $sEmail : $sLogin;
+
 			$bNewAccount = false;
 			$oAccount = \Aurora\System\Api::getModule('Mail')->getAccountsManager()->getAccountUsedToAuthorize($sEmail);
 			if (!$bAutocreateMailAccountOnNewUserFirstLogin && !$oAccount)
