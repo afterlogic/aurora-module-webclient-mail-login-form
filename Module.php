@@ -99,17 +99,16 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 						$oAccount->IncomingLogin = $sIncomingLogin;
 						$oAccount->setPassword($sPassword);
 
-						\Aurora\System\Api::getModule('Mail')->getMailManager()->validateAccountConnection($oAccount);
+						$mValidResult = \Aurora\System\Api::getModule('Mail')->getMailManager()->validateAccountConnection($oAccount, false);
+						$bResult = !($mValidResult instanceof \Exception);
 
-						if ($bNeedToUpdatePasswordOrLogin)
+						if ($bResult && $bNeedToUpdatePasswordOrLogin)
 						{
 							\Aurora\System\Api::getModule('Mail')->getAccountsManager()->updateAccount($oAccount);
 						}
-
-						$bResult =  true;
 					}
 
-					if ($bAutocreateMailAccountOnNewUserFirstLogin && $bNewAccount)
+					if ($bResult && $bAutocreateMailAccountOnNewUserFirstLogin && $bNewAccount)
 					{
 						$oUser = null;
 						$aSubArgs = array(
