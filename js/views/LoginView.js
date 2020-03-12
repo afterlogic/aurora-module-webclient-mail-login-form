@@ -171,7 +171,7 @@ CLoginView.prototype.signIn = function ()
  * @param {Object} oResponse Data obtained from the server.
  * @param {Object} oRequest Data has been transferred to the server.
  */
-CLoginView.prototype.onSystemLoginResponse = function (oResponse, oRequest)
+CLoginView.prototype.onSystemLoginResponseBase = function (oResponse, oRequest)
 {
 	if (false === oResponse.Result)
 	{
@@ -218,6 +218,15 @@ CLoginView.prototype.changeLanguage = function (sLanguage)
 CLoginView.prototype.registerBeforeButtonsController = function (oComponent)
 {
 	this.beforeButtonsControllers.push(oComponent);
+};
+
+/**
+ * @param {Object} oResponse
+ * @param {Object} oRequest
+ */
+CLoginView.prototype.onSystemLoginResponse = function (oResponse, oRequest)
+{
+	this.onSystemLoginResponseBase(oResponse, oRequest);
 };
 
 module.exports = new CLoginView();
