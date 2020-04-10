@@ -59,7 +59,7 @@
 			<div class="clear"></div>
 			
 			<div class="languages demo" data-bind="visible: bAllowChangeLanguage && !bUseDropdownLanguagesView">
-				<div class="langs_heading" data-bind="i18n: {'key': '%MODULENAME%/HEADING_SELECT_LANGUAGE'}"></div>
+				<div class="langs_heading" data-bind="text: headingSelectLanguage"></div>
 				<div data-bind="foreach: aLanguages">
 					<span class="item" data-bind="css: value + ($parent.currentLanguage() === value ? ' selected' : ''), click: function () { $parent.changeLanguage(value); }">
 						<span class="item_content">
