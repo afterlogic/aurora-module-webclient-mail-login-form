@@ -11,10 +11,11 @@
 				<form class="form fields" action="#" autocomplete="on" onsubmit="return false;" data-bind="command: loginCommand">
 					<div class="fieldset">
 						<div class="row login" data-bind="css: {'focused': usernameFocus(), 'filled': username().length > 0, shake: shake()}">
-							<label for="mail_login" class="placeholder"></label>
+							<label for="mail_username" class="placeholder"></label>
 							<span class="value">
 								<input id="mail_username" tabindex="1" class="input" name="username" type="text" spellcheck="false"
-									   data-bind="value: username, hasfocus: usernameFocus, valueUpdate: 'afterkeydown', i18n: {'key': 'COREWEBCLIENT/LABEL_LOGIN', 'type': 'placeholder'}" />
+									   data-bind="value: username, hasfocus: usernameFocus, valueUpdate: 'afterkeydown',
+										i18n: {'key': 'COREWEBCLIENT/LABEL_LOGIN', 'type': 'placeholder'}, initDom: usernameDom" />
 							</span>
 							<span class="domain-select">
 								@
@@ -28,7 +29,8 @@
 							<label for="mail_password" class="placeholder"></label>
 							<span class="value">
 								<input id="mail_password" tabindex="3" class="input" name="password" type="password" spellcheck="false"
-									   data-bind="value: password, hasfocus: passwordFocus, valueUpdate: 'afterkeydown', i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD', 'type': 'placeholder'}" />
+									   data-bind="value: password, hasfocus: passwordFocus, valueUpdate: 'afterkeydown',
+										i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD', 'type': 'placeholder'}, initDom: passwordDom" />
 							</span>
 						</div>
 					</div>

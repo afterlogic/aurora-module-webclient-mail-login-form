@@ -32,13 +32,14 @@ function CLoginView()
 	this.sInfoText = Settings.InfoText;
 	this.sBottomInfoHtmlText = Settings.BottomInfoHtmlText;
 	
-	this.login = ko.observable('');
 	this.username = ko.observable('');
 	this.password = ko.observable('');
 
+	this.usernameDom = ko.observable(null);
+	this.passwordDom = ko.observable(null);
+	
 	this.usernameFocus = ko.observable(false);
 	this.passwordFocus = ko.observable(false);
-	this.loginFocus = ko.observable(false);
 
 	this.loading = ko.observable(false);
 
@@ -122,6 +123,10 @@ CLoginView.prototype.onShow = function ()
  */
 CLoginView.prototype.signIn = function ()
 {
+	// sometimes nockoutjs conflicts with saved passwords in FF
+	this.username($(this.usernameDom()).val());
+	this.password($(this.passwordDom()).val());
+	
 	if (!this.loading())
 	{
 		var
