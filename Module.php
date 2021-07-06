@@ -63,10 +63,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		$aAllDomains = [];
 		$oTenant = \Aurora\System\Api::getTenantByWebDomain();
 		$aArgs = [];
-		if ($oTenant instanceof \Aurora\Modules\Core\Classes\Tenant)
+		if ($oTenant instanceof \Aurora\Modules\Core\Models\Tenant)
 		{
 			$aArgs = [
-				'TenantId' => $oTenant->EntityId
+				'TenantId' => $oTenant->Id
 			];
 		}
 		$mResult = [];
@@ -81,12 +81,12 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		}
 		else
 		{
-			if ($oTenant instanceof \Aurora\Modules\Core\Classes\Tenant)
+			if ($oTenant instanceof \Aurora\Modules\Core\Models\Tenant)
 			{
 				$aFilters = ['$OR' => [
 					'OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::SuperAdmin, '='],
 					'$AND' => [
-						'TenantId' => [$oTenant->EntityId, '='],
+						'TenantId' => [$oTenant->Id, '='],
 						'OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::Tenant, '='],
 					],
 				]];
