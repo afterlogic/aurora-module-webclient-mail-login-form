@@ -7,6 +7,10 @@
 
 namespace Aurora\Modules\MailLoginFormWebclient;
 
+use Aurora\Modules\Mail\Enums\ServerOwnerType;
+use Aurora\Modules\Mail\Models\Server;
+use Aurora\Modules\Mail\Module as MailModule;
+
 /**
  * @license https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
@@ -81,25 +85,25 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		}
 		else
 		{
+			$Filter = null;
 			if ($oTenant instanceof \Aurora\Modules\Core\Models\Tenant)
 			{
-				$aFilters = ['$OR' => [
-					'OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::SuperAdmin, '='],
-					'$AND' => [
-						'TenantId' => [$oTenant->Id, '='],
-						'OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::Tenant, '='],
-					],
-				]];
+				$Filter = Server::orWhere(function($query) use ($oTenant) {
+					$query->where('OwnerType', ServerOwnerType::SuperAdmin)
+						->where(function($query) use ($oTenant) {
+							$query->where('TenantId', $oTenant->Id)
+								->where('OwnerType', ServerOwnerType::Tenant);
+						});
+				});
 			}
 			else
 			{
 				//get all servers for all tenants
-				$aFilters = ['$OR' => [
-					'1@OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::Tenant, '='],
-					'2@OwnerType' => [\Aurora\Modules\Mail\Enums\ServerOwnerType::SuperAdmin, '=']
-				]];
+				$Filter = Server::where('OwnerType', ServerOwnerType::Tenant)
+					->orWhere('OwnerType', ServerOwnerType::SuperAdmin);
 			}
-			$aServers = \Aurora\System\Api::getModule('Mail')->getServersManager()->getServerListByFilter($aFilters);
+
+			$aServers = MailModule::getInstance()->getServersManager()->getServerListByFilter($Filter);
 			if ($aServers)
 			{
 				foreach ($aServers as $oServer)
