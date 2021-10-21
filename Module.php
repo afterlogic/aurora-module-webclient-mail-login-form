@@ -112,13 +112,15 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 					$aDomains = array_filter($aDomains, function($sDomain) {
 						return $sDomain !== '*';
 					});
-					$aAllDomains = array_merge($aAllDomains, $aDomains);
+					if (count($aDomains) > 0) {
+						$aAllDomains = array_merge($aAllDomains, $aDomains);
+					}
 				}
 			}
 		}
 		\Aurora\System\Api::skipCheckUserRole($bPrevState);
 
-		return $aAllDomains;
+		return array_unique($aAllDomains);
 	}
 	/***** public functions might be called with web API *****/
 }
