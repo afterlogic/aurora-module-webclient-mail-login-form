@@ -115,7 +115,7 @@ CLoginView.prototype.onShow = function ()
 		{
 			this.domains(oResponse.Result);
 		}
-	}, this, 100000);
+	}, this);
 };
 
 /**
@@ -160,7 +160,7 @@ CLoginView.prototype.signIn = function ()
 			
 			this.loading(true);
 
-			Ajax.send('%ModuleName%', 'Login', oParameters, this.onSystemLoginResponse, this, 100000);
+			Ajax.send('%ModuleName%', 'Login', oParameters, this.onSystemLoginResponse, this);
 		}
 		else
 		{
