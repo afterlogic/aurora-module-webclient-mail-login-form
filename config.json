@@ -4,7 +4,7 @@
 		"bool"
 	],
 	"Disabled_Description": [
-		"",
+		"Setting to true disables the module",
 		"string"
 	],
 	"ServerModuleName": [
@@ -12,7 +12,7 @@
 		"string"
 	],
 	"ServerModuleName_Description": [
-		"",
+		"Defines name of the module responsible for login page",
 		"string"
 	],
 	"HashModuleName": [
@@ -20,7 +20,7 @@
 		"string"
 	],
 	"HashModuleName_Description": [
-		"",
+		"Defines hash of the module responsible for login page",
 		"string"
 	],
 	"CustomLoginUrl": [
@@ -36,7 +36,7 @@
 		"string"
 	],
 	"DemoLogin_Description": [
-		"",
+		"If set, denotes email address of predefined demo account",
 		"string"
 	],
 	"DemoPassword": [
@@ -44,7 +44,7 @@
 		"string"
 	],
 	"DemoPassword_Description": [
-		"",
+		"If set, denotes password of predefined demo account",
 		"string"
 	],
 	"InfoText": [
@@ -52,7 +52,7 @@
 		"string"
 	],
 	"InfoText_Description": [
-		"",
+		"Defines additional text message shown on login page",
 		"string"
 	],
 	"BottomInfoHtmlText": [
@@ -60,7 +60,7 @@
 		"string"
 	],
 	"BottomInfoHtmlText_Description": [
-		"",
+		"Defines bottom text message shown on login page",
 		"string"
 	],
 	"LoginSignMeType": [
@@ -76,7 +76,7 @@
 		"bool"
 	],
 	"AllowChangeLanguage_Description": [
-		"",
+		"Enables changing language on login page",
 		"string"
 	],
 	"UseDropdownLanguagesView": [
@@ -84,7 +84,7 @@
 		"bool"
 	],
 	"UseDropdownLanguagesView_Description": [
-		"",
+		"If true, language selector is presented as a dropdown menu",
 		"string"
 	]
 }
