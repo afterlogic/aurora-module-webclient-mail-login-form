@@ -21,6 +21,16 @@ use Aurora\Modules\Mail\Module as MailModule;
 class Module extends \Aurora\System\Module\AbstractWebclientModule
 {
     /***** public functions might be called with web API *****/
+
+    /**
+     *
+     * @return Module
+     */
+    public static function Decorator()
+    {
+        return parent::Decorator();
+    }
+
     /**
      * Obtains list of module settings for authenticated user.
      *
