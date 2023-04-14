@@ -82,6 +82,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         } else {
             $Filter = null;
             if ($oTenant instanceof \Aurora\Modules\Core\Models\Tenant) {
+                /* @phpstan-ignore-next-line */
                 $Filter = Server::orWhere(function ($query) use ($oTenant) {
                     $query->where('OwnerType', ServerOwnerType::SuperAdmin)
                         ->where(function ($query) use ($oTenant) {
@@ -97,6 +98,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 
             $aServers = MailModule::getInstance()->getServersManager()->getServerListByFilter($Filter);
             if ($aServers) {
+                /** @var Server $oServer */
                 foreach ($aServers as $oServer) {
                     $aDomains = explode("\n", $oServer->Domains);
                     $aDomains = array_filter($aDomains, function ($sDomain) {
