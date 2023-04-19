@@ -16,6 +16,8 @@ use Aurora\Modules\Mail\Module as MailModule;
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2023, Afterlogic Corp.
  *
+ * @property Settings $oModuleSettings
+ *
  * @package Modules
  */
 class Module extends \Aurora\System\Module\AbstractWebclientModule
@@ -50,16 +52,16 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 
         return array(
-            'ServerModuleName' => $this->getConfig('ServerModuleName', ''),
-            'HashModuleName' => $this->getConfig('HashModuleName', ''),
-            'CustomLoginUrl' => $this->getConfig('CustomLoginUrl', ''),
-            'DemoLogin' => $this->getConfig('DemoLogin', ''),
-            'DemoPassword' => $this->getConfig('DemoPassword', ''),
-            'InfoText' => $this->getConfig('InfoText', ''),
-            'BottomInfoHtmlText' => $this->getConfig('BottomInfoHtmlText', ''),
-            'LoginSignMeType' => $this->getConfig('LoginSignMeType', 0),
-            'AllowChangeLanguage' => $this->getConfig('AllowChangeLanguage', true),
-            'UseDropdownLanguagesView' => $this->getConfig('UseDropdownLanguagesView', false),
+            'ServerModuleName' => $this->oModuleSettings->ServerModuleName,
+            'HashModuleName' => $this->oModuleSettings->HashModuleName,
+            'CustomLoginUrl' => $this->oModuleSettings->CustomLoginUrl,
+            'DemoLogin' => $this->oModuleSettings->DemoLogin,
+            'DemoPassword' => $this->oModuleSettings->DemoPassword,
+            'InfoText' => $this->oModuleSettings->InfoText,
+            'BottomInfoHtmlText' => $this->oModuleSettings->BottomInfoHtmlText,
+            'LoginSignMeType' => $this->oModuleSettings->LoginSignMeType,
+            'AllowChangeLanguage' => $this->oModuleSettings->AllowChangeLanguage,
+            'UseDropdownLanguagesView' => $this->oModuleSettings->UseDropdownLanguagesView,
         );
     }
 
