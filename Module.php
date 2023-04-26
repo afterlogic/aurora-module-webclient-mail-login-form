@@ -109,7 +109,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         } else {
             $Filter = null;
             if ($oTenant instanceof \Aurora\Modules\Core\Models\Tenant) {
-                /* @phpstan-ignore-next-line */
                 $Filter = Server::orWhere(function ($query) use ($oTenant) {
                     $query->where('OwnerType', ServerOwnerType::SuperAdmin)
                         ->where(function ($query) use ($oTenant) {
