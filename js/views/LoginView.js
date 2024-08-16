@@ -195,7 +195,6 @@ CLoginView.prototype.onSystemLoginResponseBase = function (oResponse, oRequest)
 	}
 	else
 	{
-		App.setAuthToken(oResponse.Result.AuthToken);
 		$.removeCookie('aurora-selected-lang');
 		
 		if (window.location.search !== '' &&
