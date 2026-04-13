@@ -192,6 +192,8 @@ CLoginView.prototype.onSystemLoginResponseBase = function (oResponse, oRequest)
 		this.shake(true);
 		
 		Api.showErrorByCode(oResponse, TextUtils.i18n('COREWEBCLIENT/ERROR_PASS_INCORRECT'));
+
+		App.broadcastEvent('AnonymousUserForm::LoginFailed', { ModuleName: '%ModuleName%' });
 	}
 	else
 	{
@@ -208,6 +210,8 @@ CLoginView.prototype.onSystemLoginResponseBase = function (oResponse, oRequest)
 		{
 			UrlUtils.clearAndReloadLocation(Browser.ie8AndBelow, false);
 		}
+
+		App.broadcastEvent('AnonymousUserForm::LoginSucceed', { ModuleName: '%ModuleName%' });
 	}
 };
 
